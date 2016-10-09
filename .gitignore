@@ -27,3 +27,6 @@
 *.exe
 *.out
 *.app
+
+egs/*.pdf
+egs/output.txt
