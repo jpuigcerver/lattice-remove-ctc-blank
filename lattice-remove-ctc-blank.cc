@@ -92,7 +92,7 @@ int main(int argc, char** argv) {
 
     if (lattice_in_is_table && lattice_out_is_table) {
       SequentialLatticeReader lattice_reader(lattice_in_str);
-      CompactLatticeWriter lattice_writer(lattice_out_str);
+      LatticeWriter lattice_writer(lattice_out_str);
       for (; !lattice_reader.Done(); lattice_reader.Next()) {
         // Read input lattice
         const std::string lattice_key = lattice_reader.Key();
@@ -109,9 +109,7 @@ int main(int argc, char** argv) {
         }
         Lattice out;
         RemoveCTCBlankFromLattice(lat, blank_symbol, &out);
-        CompactLattice compact_out;
-        ConvertLattice(out, &compact_out);
-        lattice_writer.Write(lattice_key, compact_out);
+        lattice_writer.Write(lattice_key, out);
       }
     } else {
       KALDI_ERR << "Not implemented! Both input and output lattices must be "

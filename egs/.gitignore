@@ -27,4 +27,8 @@
 *.exe
 *.out
 *.app
-lattice-remove-ctc-blank
+
+*.pdf
+output.txt
+*_alignments.txt
+*_transcripts.txt
