@@ -1,7 +1,7 @@
 # lattice-remove-ctc-blank
 
 Remove CTC blank symbols from Kaldi lattices, so that the output of the
-1;4205;0clattices are sequences of characters decoded as done by CTC.
+lattices are sequences of characters decoded as done by CTC.
 
 ## Compile & install
 
