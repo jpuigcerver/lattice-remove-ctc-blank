@@ -100,7 +100,7 @@ int main(int argc, char** argv) {
     const bool lattice_in_is_table =
         (ClassifyRspecifier(lattice_in_str, NULL, NULL) != kNoRspecifier);
     const bool lattice_out_is_table =
-        (ClassifyRspecifier(lattice_out_str, NULL, NULL) != kNoRspecifier);
+        (ClassifyWspecifier(lattice_out_str, NULL, NULL, NULL) != kNoWspecifier);
 
     LatticeArc::Label blank_symbol = 0;
     if (!ConvertStringToInteger(blank_symbol_str, &blank_symbol)) {
