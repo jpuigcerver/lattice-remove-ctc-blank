@@ -26,6 +26,7 @@
 #include "fstext/fstext-utils.h"
 #include "lat/kaldi-lattice.h"
 #include "lat/lattice-functions.h"
+#include "fstext/determinize-lattice.h"
 
 namespace kaldi {
 
@@ -87,12 +88,34 @@ int main(int argc, char** argv) {
         " e.g.: lattice-remove-ctc-blank 32 ark:input.ark ark:output.ark\n";
 
     ParseOptions po(usage);
+    BaseFloat acoustic_scale = 1.0;
+    BaseFloat graph_scale = 1.0;
+    BaseFloat beam = std::numeric_limits<BaseFloat>::infinity();
+    bool only_best_segmentation = false;
+    po.Register("acoustic-scale", &acoustic_scale,
+                "Scaling factor for acoustic likelihoods in the lattices.");
+    po.Register("graph-scale", &graph_scale,
+                "Scaling factor for graph probabilities in the lattices.");
+    po.Register("beam", &beam, "Pruning beam (applied after acoustic scaling "
+                "and adding the insertion penalty).");
+    po.Register("only-best-segmentation", &only_best_segmentation,
+                "If true, keep only the best character segmentation for each "
+                "sequence.");
     po.Read(argc, argv);
 
     if (po.NumArgs() != 3) {
       po.PrintUsage();
       exit(1);
     }
+
+    // Scaling scores
+    std::vector<std::vector<double> > scale(2, std::vector<double>{0.0, 0.0});
+    scale[0][0] = graph_scale;
+    scale[1][1] = acoustic_scale;
+
+    std::vector<std::vector<double> > inv_scale(2, std::vector<double>{0.0, 0.0});
+    inv_scale[0][0] = 1.0 / graph_scale;
+    inv_scale[1][1] = 1.0 / acoustic_scale;
 
     const std::string blank_symbol_str = po.GetArg(1);
     const std::string lattice_in_str = po.GetArg(2);
@@ -129,9 +152,26 @@ int main(int argc, char** argv) {
         if ((properties & fst::kAcyclic) != fst::kAcyclic) {
           KALDI_ERR << "Lattice " << lattice_key << " is not acyclic";
         }
+        // Acoustic scale
+        if (acoustic_scale != 1.0 || graph_scale != 1.0)
+          fst::ScaleLattice(scale, &lat);
+        // Lattice prunning
+        if (beam != std::numeric_limits<BaseFloat>::infinity())
+          PruneLattice(beam, &lat);
+        // Put lattices in the original scale
+        if (acoustic_scale != 1.0 || graph_scale != 1.0)
+          fst::ScaleLattice(inv_scale, &lat);
+        // Remove CTC Blanks from the output symbols
         Lattice out;
         RemoveCTCBlankFromLattice(lat, blank_symbol, &out);
-        lattice_writer.Write(lattice_key, out);
+        // Determinize to keep only the best segmentation hypothesis
+        if (only_best_segmentation) {
+          Lattice out_det;
+          fst::DeterminizeLattice<LatticeWeight, int32>(out, &out_det);
+          lattice_writer.Write(lattice_key, out_det);
+        } else {
+          lattice_writer.Write(lattice_key, out);
+        }
       }
     } else {
       KALDI_ERR << "Not implemented! Both input and output lattices must be "
