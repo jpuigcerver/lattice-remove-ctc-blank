@@ -166,8 +166,10 @@ int main(int argc, char** argv) {
         RemoveCTCBlankFromLattice(lat, blank_symbol, &out);
         // Determinize to keep only the best segmentation hypothesis
         if (only_best_segmentation) {
+          fst::Invert(&out);
           Lattice out_det;
           fst::DeterminizeLattice<LatticeWeight, int32>(out, &out_det);
+          fst::Invert(&out_det);
           lattice_writer.Write(lattice_key, out_det);
         } else {
           lattice_writer.Write(lattice_key, out);
