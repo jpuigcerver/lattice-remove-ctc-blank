@@ -1,5 +1,8 @@
 # lattice-remove-ctc-blank
 
+> WARNING: This project has been discontinued. Visit https://github.com/jpuigcerver/kaldi-lattice-utils  
+> to find the latest version (and other Kaldi-related utilities).
+
 Remove CTC blank symbols from Kaldi lattices, so that the output of the
 lattices are sequences of characters decoded as done by CTC.
 
